@@ -53,8 +53,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DATABASE: str = ""
-
-    REDIS_URL: str | None = None
+    POSTGRES_SCHEMA: str = "public"
 
     @computed_field  # type: ignore[misc]
     @property
@@ -66,6 +65,7 @@ class Settings(BaseSettings):
             host=self.POSTGRES_HOST,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DATABASE,
+            query=f"options=-csearch_path={self.POSTGRES_SCHEMA}"
         )
 
     SMTP_TLS: bool = True
