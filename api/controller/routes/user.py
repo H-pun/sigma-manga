@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from uuid import UUID
 
 from api.controller.deps import SessionDep, TokenDep, CurrentUser
 from api.services.user import get_all_users, get_user, update_user, delete_user, create_user, authenticate_user
@@ -24,7 +25,7 @@ async def get_all(db: SessionDep, filter: FilterQuery) -> Pagination[DetailUser]
 
 
 @router.get("/{id}")
-async def get(db: SessionDep, id: int) -> DetailUser:
+async def get(db: SessionDep, id: UUID) -> DetailUser:
     return await get_user(db, id)
 
 
@@ -40,6 +41,6 @@ async def update(db: SessionDep, user: UpdateUser, token: TokenDep):
 
 
 @router.delete("")
-async def delete(db: SessionDep, id: int):
+async def delete(db: SessionDep, id: UUID):
     await delete_user(db, user_id=id)
     return {"message": "success"}

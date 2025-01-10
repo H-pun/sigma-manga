@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from uuid import UUID
 
 class TokenPayload(BaseModel):
-    sub: int | None = None
+    sub: UUID | None = None
     exp: int | None = None
     iat: int | None = None
 

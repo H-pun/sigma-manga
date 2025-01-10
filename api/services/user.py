@@ -1,6 +1,5 @@
-import os
-
 from sqlalchemy.orm import Session, joinedload
+from uuid import UUID
 
 from api.database import User
 from api.core.exception import AuthenticationError
@@ -9,7 +8,6 @@ from api.core.utils import generate_random_string
 from api.core.config import settings
 from api.schemas.user import DetailUser, CreateUser, UpdateUser, AuthenticateUser
 from api.schemas.pagination import Pagination, FilterParams
-from urllib.parse import urlencode
 
 
 async def authenticate_user(db: Session, *, data: AuthenticateUser) -> DetailUser:
@@ -28,7 +26,7 @@ async def get_all_users(db: Session, *, filter: FilterParams) -> Pagination[Deta
     return Pagination.from_query(DetailUser, query, filter)
 
 
-async def get_user(db: Session, id: int) -> DetailUser:
+async def get_user(db: Session, id: UUID) -> DetailUser:
     user = db.query(User).filter(User.id == id).one()
     return DetailUser.model_validate(user)
 
@@ -44,14 +42,14 @@ async def create_user(db: Session, *, data: CreateUser) -> DetailUser:
     return DetailUser.model_validate(db_row)
 
 
-async def update_user(db: Session, *, data: UpdateUser, id: int):
+async def update_user(db: Session, *, data: UpdateUser, id: UUID):
     # TODO: Add password update logic
     data.password = hash_password(data.password)
     db.query(User).filter(User.id == id).update(data.model_dump())
     db.commit()
 
 
-async def delete_user(db: Session, *, user_id: int):
+async def delete_user(db: Session, *, user_id: UUID):
     user: User = db.query(User).filter(User.id == user_id).one()
     db.delete(user)
     db.commit()

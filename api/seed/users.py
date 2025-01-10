@@ -7,7 +7,7 @@ users = [
         name="Nora Whitefall",
         username="whitefall",
         password="password",
-        email="whitefall@growtopia.com"
+        email="whitefall@sigma.com"
     ),
     User(
         name="string",
