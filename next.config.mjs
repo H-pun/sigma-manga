@@ -1,8 +1,6 @@
-import type { NextConfig } from "next";
-
-const withBundleAnalyzer = async (config: NextConfig) => {
-  if (process.env.ANALYZE === "true") {
-    const bundleAnalyzer = await import("@next/bundle-analyzer");
+const withBundleAnalyzer = async (config) => {
+  if (process.env.ANALYZE === true) {
+    const bundleAnalyzer = await import('@next/bundle-analyzer');
     return bundleAnalyzer.default({
       enabled: true,
     })(config);
@@ -10,8 +8,8 @@ const withBundleAnalyzer = async (config: NextConfig) => {
   return config;
 };
 
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   rewrites: async () => {
     return [
       {
