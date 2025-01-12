@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Column,
   ColumnDef,
   ColumnFiltersState,
   flexRender,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Input } from "@/components/ui/input";
-import { ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -165,5 +166,23 @@ export function DataTable<TData, TValue>({
 
       <DataTablePagination table={table} />
     </div>
+  );
+}
+
+interface SortableButtonProps<TData> {
+  column: Column<TData>;
+  title: string;
+}
+
+export function SortableButton<TData>({ column, title }: SortableButtonProps<TData>) {
+  return (
+    <Button
+      variant="link"
+      className="p-0"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {title}
+      <ArrowUpDown />
+    </Button>
   );
 }
