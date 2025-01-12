@@ -7,9 +7,9 @@ from api.schemas.pagination import Pagination, FilterParams
 
 
 async def get_all_mangas(db: Session, *, filter: FilterParams):
-    query = db.query(Manga)
+    query = db.query(Manga).order_by(Manga.updated_at.desc())
     if filter.search:
-        query = query.filter(Manga.name.ilike(f"%{filter.search}%"))
+        query = query.filter(Manga.title.ilike(f"%{filter.search}%"))
     return Pagination.from_query(DetailManga, query, filter)
 
 

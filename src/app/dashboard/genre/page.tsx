@@ -19,17 +19,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2, Plus } from "lucide-react";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchGenres } from "@/lib/data";
+import { addGenre, fetchGenres } from "@/lib/data";
 import { columns } from "./columns";
 
 export default function Page() {
@@ -41,7 +52,7 @@ export default function Page() {
     pageSize: 5,
   });
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ["genre"],
     queryFn: () => fetchGenres(""),
   });
@@ -68,7 +79,7 @@ export default function Page() {
 
   return (
     <div className="container p-4">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 gap-3">
         <Input
           placeholder="Filter genre..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -103,9 +114,72 @@ export default function Page() {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
+        <AddDialog />
       </div>
-      <DataTable columns={columns} table={table} loading={isLoading} />
+      <DataTable columns={columns} table={table} loading={isPending} />
       <DataTablePagination table={table} />
     </div>
   );
 }
+
+const AddDialog = () => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [name, setName] = useState<string>("");
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (name: string) => addGenre(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["genre"] });
+      setIsOpen(false);
+    },
+  });
+
+  const handleSubmit = () => {
+    mutate(name);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <span>Add</span>
+          <Plus />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add Genre</DialogTitle>
+          <DialogDescription>
+            Enter the name for the new genre. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="col-span-3"
+              disabled={isPending}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            type="submit"
+            disabled={isPending}
+            onClick={() => handleSubmit()}
+          >
+            {isPending && <Loader2 className="animate-spin" />}
+            <span>Save changes</span>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

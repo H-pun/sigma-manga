@@ -7,7 +7,7 @@ from api.schemas.pagination import Pagination, FilterParams
 
 
 async def get_all_genres(db: Session, *, filter: FilterParams):
-    query = db.query(Genre)
+    query = db.query(Genre).order_by(Genre.updated_at.desc())
     if filter.search:
         query = query.filter(Genre.name.ilike(f"%{filter.search}%"))
     return Pagination.from_query(DetailGenre, query, filter)
