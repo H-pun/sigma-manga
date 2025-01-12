@@ -16,17 +16,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   table: RawTable<TData>;
+  loading: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   table,
+  loading,
 }: DataTableProps<TData, TValue>) {
   return (
     <div className="rounded-md border">
@@ -50,7 +52,16 @@ export function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {loading ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24">
+                <div className="flex justify-center items-center space-x-2">
+                  <Loader2 className="animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}

@@ -41,7 +41,7 @@ export default function Page() {
     pageSize: 5,
   });
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["genre"],
     queryFn: () => fetchGenres(""),
   });
@@ -104,7 +104,7 @@ export default function Page() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <DataTable columns={columns} table={table} />
+      <DataTable columns={columns} table={table} loading={isLoading} />
       <DataTablePagination table={table} />
     </div>
   );
