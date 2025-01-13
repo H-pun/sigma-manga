@@ -57,7 +57,7 @@ export default function Page() {
     setChartData(
       transformedData
         .map((item) => item.genreData)
-        .filter((item) => item.mangaCount > 0)
+        .filter((item) => item.mangaCount > 15)
     );
 
     setChartConfig({

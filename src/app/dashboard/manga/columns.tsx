@@ -65,7 +65,8 @@ export const columns: ColumnDef<Manga>[] = [
   },
   {
     accessorKey: "synopsis",
-    header: ({ column }) => <SortableButton column={column} title="Synopsis" />,
+    header: "Synopsis",
+    cell: ({ row }) => `${row.original.synopsis.substring(0, 50)}...`,
   },
   {
     accessorKey: "releaseDate",

@@ -1,77 +1,52 @@
+import requests
+from bs4 import BeautifulSoup
+from tqdm import tqdm
 from sqlalchemy.orm import Session
 from datetime import datetime
 from api.database import Manga, Genre
 
-genres = [
-    Genre(name="Action"),
-    Genre(name="Adventure"),
-    Genre(name="Comedy"),
-    Genre(name="Drama"),
-    Genre(name="Fantasy"),
-    Genre(name="Horror"),
-    Genre(name="Martial Arts"),
-    Genre(name="Romance"),
-    Genre(name="Sci-Fi"),
-    Genre(name="Slice of Life"),
-    Genre(name="Supernatural"),
-    Genre(name="One Shot"),
-    Genre(name="Psychological")
-]    
+limit = 100 # multiples of 50
+all_genres = {}
+all_mangas = []
 
-mangas = [
-    Manga(
-        title="One Piece",
-        synopsis="A story about pirates",
-        cover_url="https://cdn.myanimelist.net/images/manga/3/250752l.jpg",
-        release_date=datetime.strptime("1997-07-22", "%Y-%m-%d"),  # Convert to datetime
-        genres=[genres[0], genres[1], genres[4]]
-    ),
-    Manga(
-        title="Naruto",
-        synopsis="A story about ninjas",
-        cover_url="https://cdn.myanimelist.net/images/manga/1/292025l.jpg",
-        release_date=datetime.strptime("1999-09-21", "%Y-%m-%d"),
-        genres=[genres[0], genres[1], genres[4]]
-    ),
-    Manga(
-        title="Bleach",
-        synopsis="A story about shinigami",
-        cover_url="https://cdn.myanimelist.net/images/manga/3/299567l.jpg",
-        release_date=datetime.strptime("2001-08-07", "%Y-%m-%d"),
-        genres=[genres[0], genres[1], genres[4]]
-    ),
-    Manga(
-        title="Dragon Ball",
-        synopsis="A story about martial artists",
-        cover_url="https://cdn.myanimelist.net/images/manga/1/267793l.jpg",
-        release_date=datetime.strptime("1984-11-20", "%Y-%m-%d"),
-        genres=[genres[0], genres[1], genres[4]]
-    ),
-    Manga(
-        title="Attack on Titan",
-        synopsis="A story about titans",
-        cover_url="https://cdn.myanimelist.net/images/manga/2/37846l.jpg",
-        release_date=datetime.strptime("2009-09-09", "%Y-%m-%d"),
-        genres=[genres[0], genres[3]]
-    ),
-    Manga(
-        title="My Hero Academia",
-        synopsis="A story about heroes",
-        cover_url="https://cdn.myanimelist.net/images/manga/1/209370l.jpg",
-        release_date=datetime.strptime("2014-07-07", "%Y-%m-%d"),
-        genres=[genres[0]]
-    ),
-    Manga(
-        title="Black Clover",
-        synopsis="A story about magic knights",
-        cover_url="https://cdn.myanimelist.net/images/manga/1/150073l.jpg",
-        release_date=datetime.strptime("2015-02-16", "%Y-%m-%d"),
-        genres=[genres[0], genres[4]]
-    )
-]
+def get_or_create_genre(genre_name: str) -> Genre:
+    if genre_name not in all_genres:
+        all_genres[genre_name] = Genre(name=genre_name)  
+    return all_genres[genre_name]
 
 def seed_mangas(db: Session) -> None:
     if db.query(Manga).count() == 0:
         print("seeding mangas...")
-        db.add_all(genres)
-        db.add_all(mangas)
+        for i in range(0, limit, 50):
+            print(f"Processing batch {i} to {i+50}")
+            html_manga_links = requests.get(f"https://myanimelist.net/topmanga.php?limit={i}")
+            parser_manga_links = BeautifulSoup(html_manga_links.text, "html.parser")
+
+            links = [link["href"] for link in parser_manga_links.select('h3.manga_h3 a.hoverinfo_trigger[href]')]
+
+            for link in tqdm(links):
+                html_manga_info = requests.get(link)
+                parser_manga_info = BeautifulSoup(html_manga_info.text, "html.parser")
+
+                title = parser_manga_info.select_one("span[itemprop='name']").contents[0].get_text()
+                synopsys = parser_manga_info.select_one("span[itemprop='description']").get_text()
+                cover_url = parser_manga_info.select_one("img[itemprop='image']")["data-src"]
+                release_date = parser_manga_info.select_one('span:-soup-contains("Published:")').next_sibling.get_text().split("to")[0].strip()
+                try:
+                    release_date = datetime.strptime(release_date, "%b  %d, %Y")
+                except ValueError:
+                    print(f"Skipping {title} due to invalid release date format: {release_date}")
+                    continue
+                genre_names = [genre.get_text() for genre in parser_manga_info.select("span[itemprop='genre']")]
+                genres = [get_or_create_genre(genre_name) for genre_name in genre_names]
+                manga = Manga(
+                    title=title,
+                    synopsis=synopsys,
+                    cover_url=cover_url,
+                    release_date=release_date,
+                    genres=genres
+                )
+                all_mangas.append(manga)
+
+        db.add_all(all_genres.values())
+        db.add_all(all_mangas)
