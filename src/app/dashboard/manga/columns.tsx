@@ -15,6 +15,8 @@ import {
 import { Manga } from "@/types/manga";
 import { SortableButton } from "@/components/ui/data-table";
 import Image from "next/image";
+import { useState } from "react";
+import { DeleteDialog } from "./page";
 
 export const columns: ColumnDef<Manga>[] = [
   {
@@ -73,26 +75,40 @@ export const columns: ColumnDef<Manga>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const data = row.original;
+      const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
+      const [isUpdateOpen, setIsUpdateOpen] = useState<boolean>(false);
+
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(data.id)}
-            >
-              Copy data ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Update</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(data.id)}
+              >
+                Copy data ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsUpdateOpen(true)}>
+                Update
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DeleteDialog
+            isOpen={isDeleteOpen}
+            setIsOpen={setIsDeleteOpen}
+            data={data}
+          />
+        </>
       );
     },
   },

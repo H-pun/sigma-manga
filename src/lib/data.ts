@@ -27,6 +27,17 @@ export const addGenre = async (name: string) => {
   }
 };
 
+export const deleteGenre = async (id: string) => {
+  try {
+    await axios.delete("/genre", { params: { id } });
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting genre:", error);
+    return false;
+  }
+};
+
 export const fetchMangas = async (value: string) => {
   try {
     const response = await axios.get<Pagination<Manga>>("/manga", {
@@ -47,11 +58,27 @@ export const addManga = async (
   coverUrl: string
 ) => {
   try {
-    const response = await axios.post<Manga>("/manga", { title, synopsis, releaseDate, coverUrl });
+    const response = await axios.post<Manga>("/manga", {
+      title,
+      synopsis,
+      releaseDate,
+      coverUrl,
+    });
 
     return response.data;
   } catch (error) {
     console.error("Error adding manga:", error);
     return null;
+  }
+};
+
+export const deleteManga = async (id: string) => {
+  try {
+    await axios.delete("/manga", { params: { id } });
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting manga:", error);
+    return false;
   }
 };

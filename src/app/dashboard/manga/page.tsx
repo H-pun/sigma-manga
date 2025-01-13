@@ -36,10 +36,10 @@ import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 import { ChevronDown, Loader2, Plus } from "lucide-react";
 
-import { ChangeEvent, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { addManga, fetchMangas } from "@/lib/data";
+import { addManga, deleteManga, fetchMangas } from "@/lib/data";
 import { columns } from "./columns";
 import { Label } from "@/components/ui/label";
 
@@ -146,10 +146,6 @@ const AddDialog = () => {
     },
   });
 
-  const handleSubmit = () => {
-    mutate({ title, synopsis, releaseDate, coverUrl });
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -219,10 +215,61 @@ const AddDialog = () => {
           <Button
             type="submit"
             disabled={isPending}
-            onClick={() => handleSubmit()}
+            onClick={() => mutate({ title, synopsis, releaseDate, coverUrl })}
           >
             {isPending && <Loader2 className="animate-spin" />}
             <span>Save changes</span>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface DeleteDialogProps {
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  data: {
+    id: string;
+    title: string;
+    synopsis: string;
+    releaseDate: string;
+    coverUrl: string;
+  };
+}
+
+export const DeleteDialog = ({
+  isOpen,
+  setIsOpen,
+  data,
+}: DeleteDialogProps) => {
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (id: string) => deleteManga(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["manga"] });
+      setIsOpen(false);
+    },
+  });
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Delete {data.title}</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this manga?
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="destructive"
+            type="submit"
+            disabled={isPending}
+            onClick={() => mutate(data.id)}
+          >
+            {isPending && <Loader2 className="animate-spin" />}
+            <span>Delete</span>
           </Button>
         </DialogFooter>
       </DialogContent>
