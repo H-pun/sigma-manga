@@ -36,14 +36,15 @@ import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 import { ChevronDown, Loader2, Plus } from "lucide-react";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { addManga, deleteManga, fetchMangas } from "@/lib/data";
+import { addManga, deleteManga, fetchMangas, updateManga } from "@/lib/data";
 import { columns } from "./columns";
 import { Label } from "@/components/ui/label";
 
 export default function Page() {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -114,7 +115,11 @@ export default function Page() {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <AddDialog />
+        <Button variant="outline" onClick={() => setIsOpen(true)}>
+          <span>Add</span>
+          <Plus />
+        </Button>
+        <SaveDialog isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
       <DataTable columns={columns} table={table} loading={isPending} />
       <DataTablePagination table={table} />
@@ -122,8 +127,19 @@ export default function Page() {
   );
 }
 
-const AddDialog = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+interface GlobalDialogProps {
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  data?: {
+    id: string;
+    title: string;
+    synopsis: string;
+    releaseDate: string;
+    coverUrl: string;
+  };
+}
+
+export const SaveDialog = ({ isOpen, setIsOpen, data }: GlobalDialogProps) => {
   const [title, setTitle] = useState<string>("");
   const [synopsis, setSynopsis] = useState<string>("");
   const [releaseDate, setReleaseDate] = useState<string>("");
@@ -131,13 +147,14 @@ const AddDialog = () => {
 
   const queryClient = useQueryClient();
   interface BaseManga {
+    id?: string;
     title: string;
     synopsis: string;
     releaseDate: string;
     coverUrl: string;
   }
 
-  const { mutate, isPending } = useMutation({
+  const { mutate: mutateAdd, isPending: isPendingAdd } = useMutation({
     mutationFn: ({ title, synopsis, releaseDate, coverUrl }: BaseManga) =>
       addManga(title, synopsis, releaseDate, coverUrl),
     onSuccess: () => {
@@ -146,19 +163,29 @@ const AddDialog = () => {
     },
   });
 
+  const { mutate: mutateUpdate, isPending: isPendingUpdate } = useMutation({
+    mutationFn: ({ id, title, synopsis, releaseDate, coverUrl }: BaseManga) =>
+      updateManga(id!, title, synopsis, releaseDate, coverUrl),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["manga"] });
+      setIsOpen(false);
+    },
+  });
+
+  useEffect(() => {
+    setTitle(data?.title || "");
+    setSynopsis(data?.synopsis || "");
+    setReleaseDate(data?.releaseDate || "");
+    setCoverUrl(data?.coverUrl || "");
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <span>Add</span>
-          <Plus />
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Manga</DialogTitle>
+          <DialogTitle>{data ? "Update" : "Add"} Manga</DialogTitle>
           <DialogDescription>
-            Enter the detail for the new manga. Click save when you're done.
+            Enter the detail for the manga. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -171,7 +198,7 @@ const AddDialog = () => {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               className="col-span-3"
-              disabled={isPending}
+              disabled={isPendingAdd || isPendingUpdate}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -183,7 +210,7 @@ const AddDialog = () => {
               value={synopsis}
               onChange={(event) => setSynopsis(event.target.value)}
               className="col-span-3"
-              disabled={isPending}
+              disabled={isPendingAdd || isPendingUpdate}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -195,7 +222,7 @@ const AddDialog = () => {
               value={releaseDate}
               onChange={(event) => setReleaseDate(event.target.value)}
               className="col-span-3"
-              disabled={isPending}
+              disabled={isPendingAdd || isPendingUpdate}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -207,17 +234,29 @@ const AddDialog = () => {
               value={coverUrl}
               onChange={(event) => setCoverUrl(event.target.value)}
               className="col-span-3"
-              disabled={isPending}
+              disabled={isPendingAdd || isPendingUpdate}
             />
           </div>
         </div>
         <DialogFooter>
           <Button
             type="submit"
-            disabled={isPending}
-            onClick={() => mutate({ title, synopsis, releaseDate, coverUrl })}
+            disabled={isPendingAdd || isPendingUpdate}
+            onClick={() =>
+              data
+                ? mutateUpdate({
+                    id: data.id,
+                    title,
+                    synopsis,
+                    releaseDate,
+                    coverUrl,
+                  })
+                : mutateAdd({ title, synopsis, releaseDate, coverUrl })
+            }
           >
-            {isPending && <Loader2 className="animate-spin" />}
+            {(isPendingAdd || isPendingUpdate) && (
+              <Loader2 className="animate-spin" />
+            )}
             <span>Save changes</span>
           </Button>
         </DialogFooter>

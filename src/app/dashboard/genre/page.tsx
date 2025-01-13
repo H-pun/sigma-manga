@@ -37,13 +37,14 @@ import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 import { ChevronDown, Loader2, Plus } from "lucide-react";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { addGenre, deleteGenre, fetchGenres } from "@/lib/data";
+import { addGenre, deleteGenre, fetchGenres, updateGenre } from "@/lib/data";
 import { columns } from "./columns";
 
 export default function Page() {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -114,7 +115,11 @@ export default function Page() {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <AddDialog />
+        <Button variant="outline" onClick={() => setIsOpen(true)}>
+          <span>Add</span>
+          <Plus />
+        </Button>
+        <SaveDialog isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
       <DataTable columns={columns} table={table} loading={isPending} />
       <DataTablePagination table={table} />
@@ -122,13 +127,26 @@ export default function Page() {
   );
 }
 
-const AddDialog = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+interface GlobalDialogProps {
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  data?: {
+    id: string;
+    name: string;
+  };
+}
+
+export const SaveDialog = ({ isOpen, setIsOpen, data }: GlobalDialogProps) => {
   const [name, setName] = useState<string>("");
 
   const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useMutation({
+  interface BaseGenre {
+    id: string;
+    name: string;
+  }
+
+  const { mutate: mutateAdd, isPending: isPendingAdd } = useMutation({
     mutationFn: (name: string) => addGenre(name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["genre"] });
@@ -136,19 +154,25 @@ const AddDialog = () => {
     },
   });
 
+  const { mutate: mutateUpdate, isPending: isPendingUpdate } = useMutation({
+    mutationFn: ({ id, name }: BaseGenre) => updateGenre(id, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["genre"] });
+      setIsOpen(false);
+    },
+  });
+
+  useEffect(() => {
+    setName(data?.name || "");
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <span>Add</span>
-          <Plus />
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Genre</DialogTitle>
+          <DialogTitle>{data ? "Update" : "Add"} Genre</DialogTitle>
           <DialogDescription>
-            Enter the name for the new genre. Click save when you're done.
+            Enter the name for the genre. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -161,17 +185,26 @@ const AddDialog = () => {
               value={name}
               onChange={(event) => setName(event.target.value)}
               className="col-span-3"
-              disabled={isPending}
+              disabled={isPendingAdd || isPendingUpdate}
             />
           </div>
         </div>
         <DialogFooter>
           <Button
             type="submit"
-            disabled={isPending}
-            onClick={() => mutate(name)}
+            disabled={isPendingAdd || isPendingUpdate}
+            onClick={() =>
+              data
+                ? mutateUpdate({
+                    id: data.id,
+                    name,
+                  })
+                : mutateAdd(name)
+            }
           >
-            {isPending && <Loader2 className="animate-spin" />}
+            {(isPendingAdd || isPendingUpdate) && (
+              <Loader2 className="animate-spin" />
+            )}
             <span>Save changes</span>
           </Button>
         </DialogFooter>
@@ -180,20 +213,11 @@ const AddDialog = () => {
   );
 };
 
-interface DeleteDialogProps {
-  isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
-  data: {
-    id: string;
-    name: string;
-  };
-}
-
 export const DeleteDialog = ({
   isOpen,
   setIsOpen,
   data,
-}: DeleteDialogProps) => {
+}: GlobalDialogProps) => {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -207,7 +231,7 @@ export const DeleteDialog = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete {data.name}</DialogTitle>
+          <DialogTitle>Delete {data!.name}</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete this genre?
           </DialogDescription>
@@ -217,7 +241,7 @@ export const DeleteDialog = ({
             variant="destructive"
             type="submit"
             disabled={isPending}
-            onClick={() => mutate(data.id)}
+            onClick={() => mutate(data!.id)}
           >
             {isPending && <Loader2 className="animate-spin" />}
             <span>Delete</span>

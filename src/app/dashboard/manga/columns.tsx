@@ -16,7 +16,7 @@ import { Manga } from "@/types/manga";
 import { SortableButton } from "@/components/ui/data-table";
 import Image from "next/image";
 import { useState } from "react";
-import { DeleteDialog } from "./page";
+import { DeleteDialog, SaveDialog } from "./page";
 
 export const columns: ColumnDef<Manga>[] = [
   {
@@ -103,6 +103,11 @@ export const columns: ColumnDef<Manga>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <SaveDialog
+            isOpen={isUpdateOpen}
+            setIsOpen={setIsUpdateOpen}
+            data={data}
+          />
           <DeleteDialog
             isOpen={isDeleteOpen}
             setIsOpen={setIsDeleteOpen}

@@ -38,6 +38,17 @@ export const deleteGenre = async (id: string) => {
   }
 };
 
+export const updateGenre = async (id: string, name: string) => {
+  try {
+    const response = await axios.put<Genre>("/genre", { id, name });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error updating genre:", error);
+    return null;
+  }
+};
+
 export const fetchMangas = async (value: string) => {
   try {
     const response = await axios.get<Pagination<Manga>>("/manga", {
@@ -80,5 +91,28 @@ export const deleteManga = async (id: string) => {
   } catch (error) {
     console.error("Error deleting manga:", error);
     return false;
+  }
+};
+
+export const updateManga = async (
+  id: string,
+  title: string,
+  synopsis: string,
+  releaseDate: string,
+  coverUrl: string
+) => {
+  try {
+    const response = await axios.put<Manga>("/manga", {
+      id,
+      title,
+      synopsis,
+      releaseDate,
+      coverUrl,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error updating manga:", error);
+    return null;
   }
 };

@@ -15,7 +15,7 @@ import {
 import { Genre } from "@/types/genre";
 import { SortableButton } from "@/components/ui/data-table";
 import { useState } from "react";
-import { DeleteDialog } from "./page";
+import { DeleteDialog, SaveDialog } from "./page";
 
 export const columns: ColumnDef<Genre>[] = [
   {
@@ -76,6 +76,11 @@ export const columns: ColumnDef<Genre>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <SaveDialog
+            isOpen={isUpdateOpen}
+            setIsOpen={setIsUpdateOpen}
+            data={data}
+          />
           <DeleteDialog
             isOpen={isDeleteOpen}
             setIsOpen={setIsDeleteOpen}
