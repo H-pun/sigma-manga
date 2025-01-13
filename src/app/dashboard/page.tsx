@@ -21,6 +21,9 @@ import { TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Pie, PieChart } from "recharts";
 
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
+
 interface GenreChart {
   name: string;
   mangaCount: number;
@@ -73,7 +76,7 @@ export default function Page() {
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Pie Chart - Genre</CardTitle>
+            <CardTitle>Recharts - Genre</CardTitle>
             <CardDescription>
               <div className="flex items-center gap-2 font-medium leading-none">
                 Most popular genre:{" "}
@@ -86,7 +89,7 @@ export default function Page() {
               </div>
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 pb-0">
+          <CardContent className="flex-1">
             <ChartContainer
               config={chartConfig}
               className="mx-auto aspect-square max-h-[250px] pb-0 [&_.recharts-pie-label-text]:fill-foreground"
@@ -103,6 +106,25 @@ export default function Page() {
             </ChartContainer>
           </CardContent>
         </Card>
+        <Card className="flex flex-col">
+          <CardHeader className="items-center pb-0">
+            <CardTitle>Highchart - Genre</CardTitle>
+            <CardDescription>
+              <div className="flex items-center gap-2 font-medium leading-none">
+                Most popular genre:{" "}
+                {data.find(
+                  (genre) =>
+                    genre.mangaCount ===
+                    Math.max(...data.map((g) => g.mangaCount))
+                )?.name || ""}
+                <TrendingUp className="h-4 w-4" />
+              </div>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <PieChartHC data={chartData} />
+          </CardContent>
+        </Card>
         <div className="aspect-video rounded-xl bg-muted/50" />
         <div className="aspect-video rounded-xl bg-muted/50" />
         <div className="aspect-video rounded-xl bg-muted/50" />
@@ -111,3 +133,42 @@ export default function Page() {
     </div>
   );
 }
+
+const PieChartHC = ({ data }: { data: GenreChart[] }) => {
+  const options: Highcharts.Options = {
+    chart: {
+      type: "pie",
+      backgroundColor: "transparent",
+      spacing: [0, 0, 0, 0],
+      height: 250,
+    },
+    title: {
+      text: undefined,
+    },
+    series: [
+      {
+        type: "pie",
+        name: "Genres",
+        data: data.map((genre) => ({
+          name: genre.name,
+          y: genre.mangaCount,
+        })),
+        tooltip: {
+          pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>",
+        },
+      },
+    ],
+    colors: [
+      "#7cb5ec",
+      "#434348",
+      "#90ed7d",
+      "#f7a35c",
+      "#8085e9",
+      "#f15c80",
+      "#e4d354",
+      "#8085e8",
+    ],
+  };
+
+  return <HighchartsReact highcharts={Highcharts} options={options} />;
+};
