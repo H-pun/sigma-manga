@@ -24,10 +24,10 @@ import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
-import { ChevronDown, Loader2, Plus } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { fetchGenres } from "@/lib/data";
 import { columns, SaveDialog } from "./columns";

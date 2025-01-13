@@ -47,6 +47,11 @@ export const columns: ColumnDef<Genre>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: "mangaCount",
+    header: ({ column }) => <SortableButton column={column} title="Manga Count" />,
+    enableHiding: false,
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => (
       <SortableButton column={column} title="Created At" />
@@ -61,51 +66,52 @@ export const columns: ColumnDef<Genre>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const data = row.original;
-      const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
-      const [isUpdateOpen, setIsUpdateOpen] = useState<boolean>(false);
-
-      return (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(data.id)}
-              >
-                Copy data ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsUpdateOpen(true)}>
-                Update
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <SaveDialog
-            isOpen={isUpdateOpen}
-            setIsOpen={setIsUpdateOpen}
-            data={data}
-          />
-          <DeleteDialog
-            isOpen={isDeleteOpen}
-            setIsOpen={setIsDeleteOpen}
-            data={data}
-          />
-        </>
-      );
-    },
+    cell: ({ row }) => <ActionCell data={row.original} />,
   },
 ];
+
+const ActionCell = ({ data }: { data: Genre }) => {
+  const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
+  const [isUpdateOpen, setIsUpdateOpen] = useState<boolean>(false);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(data.id)}
+          >
+            Copy data ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setIsUpdateOpen(true)}>
+            Update
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <SaveDialog
+        isOpen={isUpdateOpen}
+        setIsOpen={setIsUpdateOpen}
+        data={data}
+      />
+      <DeleteDialog
+        isOpen={isDeleteOpen}
+        setIsOpen={setIsDeleteOpen}
+        data={data}
+      />
+    </>
+  );
+};
 
 export interface GenreDialogProps {
   isOpen: boolean;
@@ -144,7 +150,7 @@ export const SaveDialog = ({ isOpen, setIsOpen, data }: GenreDialogProps) => {
 
   useEffect(() => {
     setName(data?.name || "");
-  }, [isOpen]);
+  }, [isOpen, data]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -152,7 +158,7 @@ export const SaveDialog = ({ isOpen, setIsOpen, data }: GenreDialogProps) => {
         <DialogHeader>
           <DialogTitle>{data ? "Update" : "Add"} Genre</DialogTitle>
           <DialogDescription>
-            Enter the name for the genre. Click save when you're done.
+            Enter the name for the genre. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

@@ -16,5 +16,6 @@ class UpdateGenre(CreateGenre):
 
 
 class DetailGenre(UpdateGenre):
+    manga_count: int
     created_at: datetime
     updated_at: datetime
