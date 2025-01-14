@@ -29,7 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink href="#">
-                      Update manga info
+                      Admin
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
