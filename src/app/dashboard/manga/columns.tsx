@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,19 @@ export const columns: ColumnDef<Manga>[] = [
     accessorKey: "title",
     header: ({ column }) => <SortableButton column={column} title="Name" />,
     enableHiding: false,
+  },
+  {
+    accessorKey: "genres",
+    header: "Genres",
+    cell: ({ row }) => (
+      <div>
+        {row.original.genres.map((genre) => (
+          <Badge key={genre} variant="secondary" className="py-0">
+            {genre}
+          </Badge>
+        ))}
+      </div>
+    ),
   },
   {
     accessorKey: "synopsis",

@@ -2,7 +2,7 @@ from sqlalchemy import extract, func
 from sqlalchemy.orm import Session, joinedload
 from uuid import UUID
 
-from api.database import Manga
+from api.database import Manga, Genre, assoc_manga_genre
 from api.schemas.manga import DetailManga, CreateManga, UpdateManga, MangaStatsByYear
 from api.schemas.pagination import Pagination, FilterParams
 
@@ -22,7 +22,25 @@ async def get_manga_count_by_year(db: Session, year: int = None):
 
 
 async def get_all_mangas(db: Session, *, filter: FilterParams):
-    query = db.query(Manga).order_by(Manga.updated_at.desc())
+    # query = db.query(Manga).order_by(Manga.updated_at.desc())
+
+    query = (
+        db.query(
+            Manga.id,
+            Manga.title,
+            func.array_agg(Genre.name).label('genres'),
+            Manga.release_date,
+            Manga.cover_url,
+            Manga.synopsis,
+            Manga.created_at,
+            Manga.updated_at
+        )
+        .join(assoc_manga_genre, Manga.id == assoc_manga_genre.c.id_manga)
+        .join(Genre, Genre.id == assoc_manga_genre.c.id_genre)
+        .group_by(Manga.id)
+        .order_by(Manga.updated_at.desc())
+    )
+
     if filter.search:
         query = query.filter(Manga.title.ilike(f"%{filter.search}%"))
     return Pagination.from_query(DetailManga, query, filter)

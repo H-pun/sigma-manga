@@ -1,6 +1,7 @@
 export interface Manga {
   id: string;
   title: string;
+  genres: string[];
   synopsis: string;
   coverUrl: string;
   releaseDate: string;

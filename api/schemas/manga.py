@@ -19,6 +19,7 @@ class UpdateManga(CreateManga):
 
 
 class DetailManga(UpdateManga):
+    genres: list[str]
     created_at: datetime
     updated_at: datetime
 
