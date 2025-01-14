@@ -5,7 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
+  // CardFooter,
 } from "@/components/ui/card";
 
 import {
@@ -121,7 +121,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+      <div className="grid auto-rows-min gap-4 md:grid-cols-2">
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
             <CardTitle>Recharts - Genre</CardTitle>
@@ -215,14 +215,14 @@ export default function Page() {
               </BarChart>
             </ChartContainer>
           </CardContent>
-          <CardFooter className="flex-col items-start gap-2 text-sm">
+          {/* <CardFooter className="flex-col items-start gap-2 text-sm">
             <div className="flex gap-2 font-medium leading-none">
               Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
             </div>
             <div className="leading-none text-muted-foreground">
               Showing total visitors for the last 6 months
             </div>
-          </CardFooter>
+          </CardFooter> */}
         </Card>
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
