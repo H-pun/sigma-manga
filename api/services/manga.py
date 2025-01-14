@@ -38,7 +38,7 @@ async def get_all_mangas(db: Session, *, filter: FilterParams):
         .join(assoc_manga_genre, Manga.id == assoc_manga_genre.c.id_manga)
         .join(Genre, Genre.id == assoc_manga_genre.c.id_genre)
         .group_by(Manga.id)
-        .order_by(Manga.updated_at.desc())
+        # .order_by(Manga.updated_at.desc())
     )
 
     if filter.search:

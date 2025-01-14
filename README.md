@@ -8,6 +8,7 @@
 
 ## Features
 - Loading skeleton
+- Debounced Search
 - Responsive design for mobile and desktop
 - Server-side pagination
 - MyAnimeList seeder (Web scrap)

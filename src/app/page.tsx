@@ -7,7 +7,6 @@ import {
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
 } from "@/components/ui/pagination";
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -29,9 +28,13 @@ import { ChevronLeft, ChevronRight, Github } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { SearchParam } from "@/types/pagination";
+import { useMemo, useState } from "react";
+import { debounce } from "lodash";
 
 export default function Home() {
   const queryClient = useQueryClient();
+
+  const [search, setSearch] = useState<string>("");
 
   const { data, isFetching } = useQuery({
     queryKey: ["mangaPagination"],
@@ -46,10 +49,33 @@ export default function Home() {
     },
   });
 
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (searchQuery: string) => {
+        if (!searchQuery) return;
+          mutate({
+            page: 1,
+            size: 10,
+            search: searchQuery,
+          });
+      }, 500),
+    [mutate]
+  );
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    debouncedSearch(value);
+  };
+
   return (
     <div className="flex flex-col lg:max-w-[80%] mx-auto p-4">
       <div className="flex flex-row items-center justify-between py-4 gap-3">
-        <Input type="text" placeholder="Search Title" />
+        <Input
+          type="text"
+          placeholder="Search Title"
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
         <div className="flex flex-row items-center gap-4">
           <Link href={"/dashboard"}>
             <Button variant="default">Dashboard</Button>
@@ -66,37 +92,44 @@ export default function Home() {
           <ModeToggle />
         </div>
       </div>
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">Read Now</h2>
-          <p className="text-sm text-muted-foreground">
-            Top picks for you. Updated daily.
-          </p>
-        </div>
-      </div>
-      <Separator className="my-4" />
-      <div className="relative">
-        {isFetching ? (
-          <Skeleton className="h-[330px] w-full rounded-xl" />
-        ) : (
-          <ScrollArea>
-            <div className="flex space-x-4 pb-4">
-              {data?.data.map((manga) => (
-                <MangaArtwork
-                  key={manga.title}
-                  manga={manga}
-                  className="w-[250px]"
-                  aspectRatio="portrait"
-                  stringLimit={30}
-                  width={250}
-                  height={330}
-                />
-              ))}
+      {search == "" && (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Read Now
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Top picks for you. Updated daily.
+              </p>
             </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        )}
-      </div>
+          </div>
+          <Separator className="my-4" />
+          <div className="relative">
+            {isFetching ? (
+              <Skeleton className="h-[330px] w-full rounded-xl" />
+            ) : (
+              <ScrollArea>
+                <div className="flex space-x-4 pb-4">
+                  {data?.data.map((manga) => (
+                    <MangaArtwork
+                      key={manga.title}
+                      manga={manga}
+                      className="w-[250px]"
+                      aspectRatio="portrait"
+                      stringLimit={30}
+                      width={250}
+                      height={330}
+                    />
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            )}
+          </div>
+        </>
+      )}
+
       <div className="mt-6 space-y-1">
         <h2 className="text-2xl font-semibold tracking-tight">Made for You</h2>
         <p className="text-sm text-muted-foreground">
@@ -104,7 +137,7 @@ export default function Home() {
         </p>
       </div>
       <Separator className="my-4" />
-      {isFetching ? (
+      {isFetching || isPendingPagination ? (
         <Skeleton className="h-[170px] w-full rounded-xl" />
       ) : (
         <div className="flex flex-row flex-wrap w-full items-center justify-center gap-4">
@@ -136,13 +169,13 @@ export default function Home() {
             </Button>{" "}
           </PaginationItem>
           <PaginationItem>
-            <PaginationLink href="#">{data?.page}</PaginationLink>
+            <span className="mx-2">{data?.page}</span>
           </PaginationItem>
           <PaginationItem>
             <PaginationEllipsis />
           </PaginationItem>
           <PaginationItem>
-            <PaginationLink href="#">{data?.pages}</PaginationLink>
+            <span className="mx-2">{data?.pages}</span>
           </PaginationItem>
           <PaginationItem>
             <Button
