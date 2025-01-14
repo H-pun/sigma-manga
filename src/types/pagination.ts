@@ -5,3 +5,13 @@ export interface Pagination<T> {
   page: number; // Current Page
   data: T[];
 }
+
+export interface SearchParam {
+  page: number;
+  size: number;
+  search: string;
+}
+
+export const defaultPagination = () => {
+  return { total: 0, pages: 0, size: 0, page: 0, data: [] };
+};

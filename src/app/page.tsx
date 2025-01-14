@@ -2,6 +2,14 @@
 
 import Image from "next/image";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from "@/components/ui/pagination";
+
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
@@ -10,22 +18,32 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Link from "next/link";
 import moment from "moment";
 import { cn } from "@/lib/utils";
 import { Manga } from "@/types/manga";
-import { fetchMangas } from "@/lib/data";
-import { Github } from "lucide-react";
+import { fetchMangaPagination } from "@/lib/data";
+import { ChevronLeft, ChevronRight, Github } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { SearchParam } from "@/types/pagination";
 
 export default function Home() {
+  const queryClient = useQueryClient();
+
   const { data, isFetching } = useQuery({
-    queryKey: ["manga"],
-    queryFn: () => fetchMangas(""),
-    initialData: [],
+    queryKey: ["mangaPagination"],
+    queryFn: () => fetchMangaPagination(1, 10, ""),
+  });
+
+  const { mutate, isPending: isPendingPagination } = useMutation({
+    mutationFn: ({ page, size, search }: SearchParam) =>
+      fetchMangaPagination(page, size, search),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["mangaPagination"], () => data);
+    },
   });
 
   return (
@@ -58,26 +76,26 @@ export default function Home() {
       </div>
       <Separator className="my-4" />
       <div className="relative">
-        {isFetching && (
+        {isFetching ? (
           <Skeleton className="h-[330px] w-full rounded-xl" />
+        ) : (
+          <ScrollArea>
+            <div className="flex space-x-4 pb-4">
+              {data?.data.map((manga) => (
+                <MangaArtwork
+                  key={manga.title}
+                  manga={manga}
+                  className="w-[250px]"
+                  aspectRatio="portrait"
+                  stringLimit={30}
+                  width={250}
+                  height={330}
+                />
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         )}
-
-        <ScrollArea>
-          <div className="flex space-x-4 pb-4">
-            {data.map((manga) => (
-              <MangaArtwork
-                key={manga.title}
-                manga={manga}
-                className="w-[250px]"
-                aspectRatio="portrait"
-                stringLimit={30}
-                width={250}
-                height={330}
-              />
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
       </div>
       <div className="mt-6 space-y-1">
         <h2 className="text-2xl font-semibold tracking-tight">Made for You</h2>
@@ -86,19 +104,61 @@ export default function Home() {
         </p>
       </div>
       <Separator className="my-4" />
-      {isFetching && <Skeleton className="h-[170px] w-full rounded-xl" />}
-      <div className="flex flex-row flex-wrap w-full items-center justify-center gap-4">
-        {data.map((manga) => (
-          <MangaArtwork
-            key={manga.title}
-            manga={manga}
-            className="w-[170px] mx-auto"
-            aspectRatio="square"
-            width={170}
-            height={170}
-          />
-        ))}
-      </div>
+      {isFetching ? (
+        <Skeleton className="h-[170px] w-full rounded-xl" />
+      ) : (
+        <div className="flex flex-row flex-wrap w-full items-center justify-center gap-4">
+          {data?.data.map((manga) => (
+            <MangaArtwork
+              key={manga.title}
+              manga={manga}
+              className="w-[170px] mx-auto"
+              aspectRatio="square"
+              width={170}
+              height={170}
+            />
+          ))}
+        </div>
+      )}
+      <Pagination className="my-4">
+        <PaginationContent>
+          <PaginationItem>
+            <Button
+              variant="ghost"
+              className="gap-1 pl-2.5"
+              onClick={() =>
+                mutate({ page: data!.page - 1, size: 10, search: "" })
+              }
+              disabled={isPendingPagination || data?.page === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Previous</span>
+            </Button>{" "}
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink href="#">{data?.page}</PaginationLink>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationEllipsis />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink href="#">{data?.pages}</PaginationLink>
+          </PaginationItem>
+          <PaginationItem>
+            <Button
+              variant="ghost"
+              className="gap-1 pr-2.5"
+              onClick={() =>
+                mutate({ page: data!.page + 1, size: 10, search: "" })
+              }
+              disabled={isPendingPagination || data?.page === data?.pages}
+            >
+              <span>Next</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }
@@ -178,7 +238,9 @@ function MangaArtwork({
               </div>
             </div>
             <Separator className="my-4" />
-            <h4 className="text-center text-xl font-semibold tracking-tight">Synopsis</h4>
+            <h4 className="text-center text-xl font-semibold tracking-tight">
+              Synopsis
+            </h4>
             <div className="whitespace-pre-wrap text-justify p-4">
               {manga.synopsis}
             </div>
