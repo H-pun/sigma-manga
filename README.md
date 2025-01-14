@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sigma Manga
 
-## Getting Started
+<div align="center">
+  <img src="https://www.whiteboardjournal.com/wp-content/uploads/2022/01/unnamed-9-2.jpg" alt="Image Description" style="width: auto; height: 200px;">
+</div>
 
-First, run the development server:
+>#### ❝ When one more chapter before sleep turn into an entire season ❞
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
+- Loading skeleton
+- Responsive design for mobile and desktop
+- Server-side pagination
+- MyAnimeList seeder (Web scrap)
+- Pytest for automated back-end testing
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
+- Python v3.10+
+- Node.js v18+ (Recommended LTS v20)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How to Install
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/H-pun/sigma-manga.git
+    ```
+2. Navigate to the project directory:
+    ```sh
+    cd sigma-manga
+    ```
+3. Create a virtual environment for Python:
+    ```sh
+   python -m venv .venv
+    ```
+4. Activate the virtual environment:
+    - On Windows:
+        ```sh
+        .venv\Scripts\activate
+        ```
+    - On macOS/Linux:
+        ```sh
+        source .venv/bin/activate
+        ```
+5. Install the Python dependencies:
+    ```sh
+    pip install -r requirements-dev.txt
+    ```
+6. Install the Node.js dependencies:
+    ```sh
+    npm install
+    ```
+7. Seed the database with initial data from MyAnimeList:
+    ```sh
+    py -m api.seeder
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## How to Run
+1. Start the development server:
 
-To learn more about Next.js, take a look at the following resources:
+    - `npm run fastapi`: Starts the back-end FastAPI server.
+    - `npm run dev`: Starts the front-end development server.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    > [!NOTE] 
+    > Or you can start both servers at once using:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    - `npm run dev:all`: Starts both the front-end and back-end servers.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. Open your browser and navigate to `http://localhost:3000`
