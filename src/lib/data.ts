@@ -1,6 +1,6 @@
 import axios from "@/lib/axios";
 import type { Genre } from "@/types/genre";
-import type { Manga } from "@/types/manga";
+import type { Manga, MangaCountByYear } from "@/types/manga";
 import type { Pagination } from "@/types/pagination";
 
 export const fetchGenres = async (value: string) => {
@@ -56,6 +56,19 @@ export const fetchMangas = async (value: string) => {
     });
 
     return response.data.data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return [];
+  }
+};
+
+export const fetchMangaCountByYear = async (year: number) => {
+  try {
+    const response = await axios.get<MangaCountByYear[]>("/manga/year-count", {
+      params: { year },
+    });
+
+    return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);
     return [];

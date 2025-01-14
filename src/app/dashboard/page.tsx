@@ -5,6 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 
 import {
@@ -14,7 +15,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { fetchGenres } from "@/lib/data";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
+
+import { fetchGenres, fetchMangaCountByYear } from "@/lib/data";
 import { useQuery } from "@tanstack/react-query";
 
 import { TrendingUp } from "lucide-react";
@@ -23,6 +26,7 @@ import { Pie, PieChart } from "recharts";
 
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import { MangaCountByYear } from "@/types/manga";
 
 interface GenreChart {
   name: string;
@@ -31,36 +35,80 @@ interface GenreChart {
 }
 
 export default function Page() {
-  const [chartData, setChartData] = useState<GenreChart[]>([]);
-  const [chartConfig, setChartConfig] = useState<ChartConfig>({});
+  const [chartDataGenre, setChartDataGenre] = useState<GenreChart[]>([]);
+  const [chartConfigGenre, setChartConfigGenre] = useState<ChartConfig>({});
+  const [chartDataMangaCount, setChartDataMangaCount] = useState<
+    MangaCountByYear[]
+  >([]);
+  const [chartConfigMangaCount, setChartConfigMangaCount] =
+    useState<ChartConfig>({});
 
-  const { data } = useQuery({
+  const { data: dataMangaCount } = useQuery({
+    queryKey: ["mangaCountByYear"],
+    queryFn: () => fetchMangaCountByYear(2015),
+    initialData: [],
+  });
+
+  const { data: dataGenre } = useQuery({
     queryKey: ["genre"],
     queryFn: () => fetchGenres(""),
     initialData: [],
   });
 
   useEffect(() => {
-    if (!data) return;
-    const transformedData = data.map((genre, index) => {
+    if (!dataMangaCount) return;
+    const transformedData = dataMangaCount.map((manga, index) => {
+      return {
+        mangaData: {
+          year: manga.year,
+          count: manga.count,
+          fill: `hsl(${
+            (index * (360 / dataMangaCount.length) + 30) % 360
+          }, 70%, 60%)`,
+        },
+        configData: { [manga.year]: { label: manga.year } },
+      };
+    });
+
+    setChartDataMangaCount(
+      transformedData.map((item) => item.mangaData)
+      // .filter((item) => item.mangaCount > 15)
+    );
+
+    setChartConfigMangaCount({
+      count: {
+        label: "Count",
+      },
+      ...transformedData.reduce(
+        (acc, item) => ({ ...acc, ...item.configData }),
+        {}
+      ),
+    });
+  }, [dataMangaCount]);
+
+  useEffect(() => {
+    if (!dataGenre) return;
+    const transformedData = dataGenre.map((genre, index) => {
       const key = genre.name.replace(/\s+/g, "").toLowerCase();
       return {
         genreData: {
           name: key,
           mangaCount: genre.mangaCount,
-          fill: `hsl(${(index * (360 / data.length) + 30) % 360}, 70%, 60%)`,
+          fill: `hsl(${
+            (index * (360 / dataGenre.length) + 30) % 360
+          }, 70%, 60%)`,
         },
         configData: { [key]: { label: genre.name } },
       };
     });
 
-    setChartData(
+    setChartDataGenre(
       transformedData
         .map((item) => item.genreData)
         .filter((item) => item.mangaCount > 15)
     );
 
-    setChartConfig({
+    setChartConfigGenre({
       mangaCount: {
         label: "Manga Count",
       },
@@ -69,7 +117,7 @@ export default function Page() {
         {}
       ),
     });
-  }, [data]);
+  }, [dataGenre]);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -80,10 +128,10 @@ export default function Page() {
             <CardDescription>
               <div className="flex items-center gap-2 font-medium leading-none">
                 Most popular genre:{" "}
-                {data.find(
+                {dataGenre.find(
                   (genre) =>
                     genre.mangaCount ===
-                    Math.max(...data.map((g) => g.mangaCount))
+                    Math.max(...dataGenre.map((g) => g.mangaCount))
                 )?.name || ""}
                 <TrendingUp className="h-4 w-4" />
               </div>
@@ -91,13 +139,13 @@ export default function Page() {
           </CardHeader>
           <CardContent className="flex-1">
             <ChartContainer
-              config={chartConfig}
+              config={chartConfigGenre}
               className="mx-auto aspect-square max-h-[250px] pb-0 [&_.recharts-pie-label-text]:fill-foreground"
             >
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 <Pie
-                  data={chartData}
+                  data={chartDataGenre}
                   dataKey="mangaCount"
                   label
                   nameKey="name"
@@ -112,24 +160,87 @@ export default function Page() {
             <CardDescription>
               <div className="flex items-center gap-2 font-medium leading-none">
                 Most popular genre:{" "}
-                {data.find(
+                {dataGenre.find(
                   (genre) =>
                     genre.mangaCount ===
-                    Math.max(...data.map((g) => g.mangaCount))
+                    Math.max(...dataGenre.map((g) => g.mangaCount))
                 )?.name || ""}
                 <TrendingUp className="h-4 w-4" />
               </div>
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1">
-            <PieChartHC data={chartData} />
+            <PieChartHC data={chartDataGenre} />
           </CardContent>
         </Card>
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
+        <Card>
+          <CardHeader>
+            <CardTitle>Recharts - Year Manga</CardTitle>
+            <CardDescription>
+              Top 100 MyMangaList
+              {dataMangaCount.length > 0
+                ? ` ${dataMangaCount[0].year} - ${
+                    dataMangaCount[dataMangaCount.length - 1].year
+                  }`
+                : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfigMangaCount}>
+              <BarChart
+                accessibilityLayer
+                data={chartDataMangaCount}
+                layout="vertical"
+                margin={{
+                  left: 0,
+                }}
+              >
+                <YAxis
+                  dataKey="year"
+                  type="category"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  interval={0}
+                  // tickFormatter={(value) =>
+                  //   chartConfig[value as keyof typeof chartConfig]?.label
+                  // }
+                />
+                <XAxis dataKey="count" type="number" hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="count" layout="vertical" radius={5} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-2 text-sm">
+            <div className="flex gap-2 font-medium leading-none">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="leading-none text-muted-foreground">
+              Showing total visitors for the last 6 months
+            </div>
+          </CardFooter>
+        </Card>
+        <Card className="flex flex-col">
+          <CardHeader className="items-center pb-0">
+            <CardTitle>Highchart - Year Manga</CardTitle>
+            <CardDescription>
+              Top 100 MyMangaList
+              {dataMangaCount.length > 0
+                ? ` ${dataMangaCount[0].year} - ${
+                    dataMangaCount[dataMangaCount.length - 1].year
+                  }`
+                : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <ColumnChartHC data={chartDataMangaCount} />
+          </CardContent>
+        </Card>
       </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
     </div>
   );
 }
@@ -140,7 +251,14 @@ const PieChartHC = ({ data }: { data: GenreChart[] }) => {
       type: "pie",
       backgroundColor: "transparent",
       spacing: [0, 0, 0, 0],
-      height: 250,
+      height: 220,
+    },
+    plotOptions: {
+      pie: {
+        dataLabels: {
+          enabled: false,
+        },
+      },
     },
     title: {
       text: undefined,
@@ -167,6 +285,48 @@ const PieChartHC = ({ data }: { data: GenreChart[] }) => {
       "#f15c80",
       "#e4d354",
       "#8085e8",
+    ],
+  };
+
+  return <HighchartsReact highcharts={Highcharts} options={options} />;
+};
+
+const ColumnChartHC = ({ data }: { data: MangaCountByYear[] }) => {
+  const options = {
+    chart: {
+      type: "column",
+      backgroundColor: "transparent",
+      spacing: [20, 0, 0, 0],
+      height: 220,
+    },
+    title: {
+      text: undefined,
+    },
+    xAxis: {
+      categories: data.map((item) => item.year),
+      labels: {
+        style: {
+          color: "hsl(var(--muted-foreground))",
+        },
+      },
+    },
+    yAxis: {
+      min: 0,
+      max: Math.max(...data.map((item) => item.count)) + 1,
+      title: {
+        text: "Manga Count",
+      },
+      labels: {
+        style: {
+          color: "hsl(var(--muted-foreground))",
+        },
+      },
+    },
+    series: [
+      {
+        name: "Manga Count",
+        data: data.map((item) => item.count),
+      },
     ],
   };
 

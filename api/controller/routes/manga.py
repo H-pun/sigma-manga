@@ -2,11 +2,16 @@ from fastapi import APIRouter
 from uuid import UUID
 
 from api.controller.deps import SessionDep, TokenDep, CurrentUser
-from api.services.manga import get_all_mangas, get_manga, update_manga, delete_manga, create_manga
-from api.schemas.manga import DetailManga, CreateManga, UpdateManga
+from api.services.manga import get_all_mangas, get_manga, update_manga, delete_manga, create_manga, get_manga_count_by_year
+from api.schemas.manga import DetailManga, CreateManga, UpdateManga, MangaStatsByYear
 from api.schemas.pagination import Pagination, FilterQuery
 
 router = APIRouter()
+
+
+@router.get("/year-count")
+async def get_year_count(db: SessionDep, year: int) -> list[MangaStatsByYear]:
+    return await get_manga_count_by_year(db, year=year)
 
 
 @router.get("")

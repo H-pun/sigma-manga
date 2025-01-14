@@ -21,3 +21,11 @@ class UpdateManga(CreateManga):
 class DetailManga(UpdateManga):
     created_at: datetime
     updated_at: datetime
+
+
+class MangaStatsByYear(BaseModel):
+    year: int
+    count: int
+    model_config = ConfigDict(
+        from_attributes=True
+    )

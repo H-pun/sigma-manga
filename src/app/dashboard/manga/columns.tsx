@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SortableButton } from "@/components/ui/data-table";
 
+import moment from "moment";
 import { Loader2, MoreHorizontal } from "lucide-react";
 import { addManga, deleteManga, updateManga } from "@/lib/data";
 
@@ -73,18 +74,21 @@ export const columns: ColumnDef<Manga>[] = [
     header: ({ column }) => (
       <SortableButton column={column} title="Release Date" />
     ),
+    cell: ({ row }) => moment(row.original.releaseDate).format("MMM DD, YYYY"),
   },
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
       <SortableButton column={column} title="Created At" />
     ),
+    cell: ({ row }) => moment(row.original.createdAt).format("YYYY-MM-DD HH:mm:ss"),
   },
   {
     accessorKey: "updatedAt",
     header: ({ column }) => (
       <SortableButton column={column} title="Updated At" />
     ),
+    cell: ({ row }) => moment(row.original.updatedAt).format("YYYY-MM-DD HH:mm:ss"),
   },
   {
     id: "actions",

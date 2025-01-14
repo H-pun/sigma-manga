@@ -1,9 +1,24 @@
+from sqlalchemy import extract, func
 from sqlalchemy.orm import Session, joinedload
 from uuid import UUID
 
 from api.database import Manga
-from api.schemas.manga import DetailManga, CreateManga, UpdateManga
+from api.schemas.manga import DetailManga, CreateManga, UpdateManga, MangaStatsByYear
 from api.schemas.pagination import Pagination, FilterParams
+
+
+async def get_manga_count_by_year(db: Session, year: int = None):
+    query = (
+        db.query(
+            extract('year', Manga.release_date).label('year'),
+            func.count(Manga.id).label('count')
+        )
+        .group_by('year')
+        .order_by('year')
+    )
+    if year:
+        query = query.filter(extract('year', Manga.release_date) > year)
+    return [MangaStatsByYear.model_validate(row) for row in query.all()]
 
 
 async def get_all_mangas(db: Session, *, filter: FilterParams):

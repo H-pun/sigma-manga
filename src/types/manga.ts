@@ -7,3 +7,8 @@ export interface Manga {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface MangaCountByYear {
+  year: number;
+  count: number;
+}
