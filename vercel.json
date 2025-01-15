@@ -1,15 +1,15 @@
 {
-    "builds": [
-      {
-        "src": "api/index.py",
-        "use": "@vercel/python",
-        "config": {
-          "excludeFiles": "{.next,*.cache,node_modules,src}/**"
-        }
-      },
-      {
-        "src": "package.json",
-        "use": "@vercel/next"
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": "{.next,*.cache,node_modules,src}/**"
       }
-    ]
-  }
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ]
+}
