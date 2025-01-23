@@ -47,8 +47,11 @@
 6. Install the Node.js dependencies:
     ```sh
     npm install
+7. Apply database migrations:
+    ```sh
+    alembic upgrade head
     ```
-7. Seed the database with initial data from MyAnimeList:
+8. Seed the database with initial data from MyAnimeList:
     ```sh
     py -m api.seeder
     ```
@@ -60,9 +63,8 @@
     - `npm run fastapi`: Starts the back-end FastAPI server.
     - `npm run dev`: Starts the front-end development server.
 
-    > [!NOTE] 
-    > Or you can start both servers at once using:
-
-    - `npm run dev:all`: Starts both the front-end and back-end servers.
+> [!NOTE] 
+> Or you can start both servers at once using:
+> - `npm run dev:all`: Starts both the front-end and back-end servers.
 
 2. Open your browser and navigate to `http://localhost:3000`
