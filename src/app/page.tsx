@@ -17,66 +17,47 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import Link from "next/link";
 import moment from "moment";
 import { cn } from "@/lib/utils";
 import { Manga } from "@/types/manga";
-import { fetchMangaPagination } from "@/lib/data";
+import { fetchMangas } from "@/lib/data";
 import { ChevronLeft, ChevronRight, Github } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { SearchParam } from "@/types/pagination";
-import { useMemo, useState } from "react";
-import { debounce } from "lodash";
+import { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function Home() {
-  const queryClient = useQueryClient();
-
-  const [search, setSearch] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const [filter, setFilter] = useState<string>("");
+  const debouncedFilter = useDebounce(filter, 500);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["mangaPagination"],
-    queryFn: () => fetchMangaPagination(1, 10, ""),
+    queryKey: ["mangas", page, debouncedFilter],
+    queryFn: () =>
+      fetchMangas({
+        page,
+        size: 10,
+        search: debouncedFilter,
+      }),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
   });
-
-  const { mutate, isPending: isPendingPagination } = useMutation({
-    mutationFn: ({ page, size, search }: SearchParam) =>
-      fetchMangaPagination(page, size, search),
-    onSuccess: (data) => {
-      queryClient.setQueryData(["mangaPagination"], () => data);
-    },
-  });
-
-  const debouncedSearch = useMemo(
-    () =>
-      debounce(async (searchQuery: string) => {
-        if (!searchQuery) return;
-          mutate({
-            page: 1,
-            size: 10,
-            search: searchQuery,
-          });
-      }, 500),
-    [mutate]
-  );
-
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    debouncedSearch(value);
-  };
 
   return (
-    <div className="flex flex-col lg:max-w-[80%] mx-auto p-4">
-      <div className="flex flex-row items-center justify-between py-4 gap-3">
+    <div className="flex flex-col w-full max-w-5xl mx-auto p-4">
+      <div className="flex items-center justify-between py-4 gap-3">
         <Input
           type="text"
           placeholder="Search Title"
-          value={search}
-          onChange={(e) => handleSearch(e.target.value)}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
         />
-        <div className="flex flex-row items-center gap-4">
+        <div className="flex items-center gap-4">
           <Link href={"/dashboard"}>
             <Button variant="default">Dashboard</Button>
           </Link>
@@ -92,7 +73,7 @@ export default function Home() {
           <ModeToggle />
         </div>
       </div>
-      {search == "" && (
+      {filter == "" && (
         <>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -137,7 +118,7 @@ export default function Home() {
         </p>
       </div>
       <Separator className="my-4" />
-      {isFetching || isPendingPagination ? (
+      {isFetching ? (
         <Skeleton className="h-[170px] w-full rounded-xl" />
       ) : (
         <div className="flex flex-row flex-wrap w-full items-center justify-center gap-4">
@@ -159,14 +140,12 @@ export default function Home() {
             <Button
               variant="ghost"
               className="gap-1 pl-2.5"
-              onClick={() =>
-                mutate({ page: data!.page - 1, size: 10, search: "" })
-              }
-              disabled={isPendingPagination || data?.page === 1}
+              onClick={() => setPage(page - 1)}
+              disabled={isFetching || page === 1}
             >
               <ChevronLeft className="h-4 w-4" />
               <span>Previous</span>
-            </Button>{" "}
+            </Button>
           </PaginationItem>
           <PaginationItem>
             <span className="mx-2">{data?.page}</span>
@@ -181,10 +160,8 @@ export default function Home() {
             <Button
               variant="ghost"
               className="gap-1 pr-2.5"
-              onClick={() =>
-                mutate({ page: data!.page + 1, size: 10, search: "" })
-              }
-              disabled={isPendingPagination || data?.page === data?.pages}
+              onClick={() => setPage(page + 1)}
+              disabled={isFetching || data?.page === data?.pages}
             >
               <span>Next</span>
               <ChevronRight className="h-4 w-4" />
@@ -242,43 +219,40 @@ function MangaArtwork({
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-fit">
-        <div className="flex flex-col gap-4 relative">
-          <ScrollArea className="max-h-96">
-            <div className="flex flex-row gap-5 p-4">
-              <div className="overflow-hidden rounded-md flex-shrink-0">
-                <Image
-                  src={manga.coverUrl}
-                  alt={manga.title}
-                  width={150}
-                  height={150}
-                  className="object-cover aspect-[3/4]"
-                />
-              </div>
-              <div className="flex flex-col justify-center w-fit">
-                <h2 className="text-xl font-bold">{manga.title}</h2>
-                <p className="text-sm text-gray-500">
-                  Release Date:{" "}
-                  {moment(manga.releaseDate).format("MMM DD, YYYY")}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {manga.genres.map((genre) => (
-                    <Badge key={genre} variant="secondary" className="py-0">
-                      {genre}
-                    </Badge>
-                  ))}
-                </div>
+      <DialogContent className="md:max-w-2xl">
+        <ScrollArea className="max-h-96">
+          <div className="flex flex-row gap-5 p-4">
+            <div className="overflow-hidden rounded-md flex-shrink-0">
+              <Image
+                src={manga.coverUrl}
+                alt={manga.title}
+                width={150}
+                height={150}
+                className="object-cover aspect-[3/4]"
+              />
+            </div>
+            <div className="flex flex-col justify-center w-fit">
+              <h2 className="text-xl font-bold">{manga.title}</h2>
+              <p className="text-sm text-gray-500">
+                Release Date: {moment(manga.releaseDate).format("MMM DD, YYYY")}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {manga.genres.map((genre) => (
+                  <Badge key={genre} variant="secondary" className="py-0">
+                    {genre}
+                  </Badge>
+                ))}
               </div>
             </div>
-            <Separator className="my-4" />
-            <h4 className="text-center text-xl font-semibold tracking-tight">
-              Synopsis
-            </h4>
-            <div className="whitespace-pre-wrap text-justify p-4">
-              {manga.synopsis}
-            </div>
-          </ScrollArea>
-        </div>
+          </div>
+          <Separator className="my-4" />
+          <h4 className="text-center text-xl font-semibold tracking-tight">
+            Synopsis
+          </h4>
+          <div className="whitespace-pre-wrap text-justify p-4">
+            {manga.synopsis}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

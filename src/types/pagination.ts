@@ -6,12 +6,22 @@ export interface Pagination<T> {
   data: T[];
 }
 
-export interface SearchParam {
+export interface PaginationQuery {
   page: number;
   size: number;
   search: string;
 }
 
-export const defaultPagination = () => {
-  return { total: 0, pages: 0, size: 0, page: 0, data: [] };
+export const defaultPaginationQuery: PaginationQuery = {
+  page: 1,
+  size: 10,
+  search: "",
+};
+
+export const defaultPagination: Pagination<unknown> = {
+  total: 0,
+  pages: 0,
+  size: 10,
+  page: 1,
+  data: [],
 };

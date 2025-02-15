@@ -51,9 +51,8 @@ export default function Page() {
   });
 
   const { data: dataGenre, isFetching: isFetchingGenre } = useQuery({
-    queryKey: ["genre"],
-    queryFn: () => fetchGenres(""),
-    initialData: [],
+    queryKey: ["genres"],
+    queryFn: () => fetchGenres(),
   });
 
   useEffect(() => {
@@ -89,14 +88,14 @@ export default function Page() {
 
   useEffect(() => {
     if (!dataGenre) return;
-    const transformedData = dataGenre.map((genre, index) => {
+    const transformedData = dataGenre.data.map((genre, index) => {
       const key = genre.name.replace(/\s+/g, "").toLowerCase();
       return {
         genreData: {
           name: key,
           mangaCount: genre.mangaCount,
           fill: `hsl(${
-            (index * (360 / dataGenre.length) + 30) % 360
+            (index * (360 / dataGenre.data.length) + 30) % 360
           }, 70%, 60%)`,
         },
         configData: { [key]: { label: genre.name } },
@@ -132,10 +131,10 @@ export default function Page() {
               <CardDescription>
                 <div className="flex items-center gap-2 font-medium leading-none">
                   Most popular genre:{" "}
-                  {dataGenre.find(
+                  {dataGenre?.data.find(
                     (genre) =>
                       genre.mangaCount ===
-                      Math.max(...dataGenre.map((g) => g.mangaCount))
+                      Math.max(...dataGenre.data.map((g) => g.mangaCount))
                   )?.name || ""}
                   <TrendingUp className="h-4 w-4" />
                 </div>
@@ -168,10 +167,10 @@ export default function Page() {
               <CardDescription>
                 <div className="flex items-center gap-2 font-medium leading-none">
                   Most popular genre:{" "}
-                  {dataGenre.find(
+                  {dataGenre?.data.find(
                     (genre) =>
                       genre.mangaCount ===
-                      Math.max(...dataGenre.map((g) => g.mangaCount))
+                      Math.max(...dataGenre.data.map((g) => g.mangaCount))
                   )?.name || ""}
                   <TrendingUp className="h-4 w-4" />
                 </div>
