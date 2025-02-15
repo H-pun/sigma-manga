@@ -24,7 +24,7 @@ import moment from "moment";
 import { cn } from "@/lib/utils";
 import { Manga } from "@/types/manga";
 import { fetchMangas } from "@/lib/data";
-import { ChevronLeft, ChevronRight, Github } from "lucide-react";
+import { ChevronLeft, ChevronRight, Github, Server } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -60,6 +60,11 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <Link href={"/dashboard"}>
             <Button variant="default">Dashboard</Button>
+          </Link>
+          <Link href={"/api/docs"}>
+            <Button variant="outline" size="icon">
+              <Server className="h-[1.2rem] w-[1.2rem]" />
+            </Button>
           </Link>
           <Link
             target="_blank"

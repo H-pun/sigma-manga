@@ -11,6 +11,7 @@
 - Debounced Search
 - Responsive design for mobile and desktop
 - Server-side pagination
+- Pagination caching
 - MyAnimeList seeder (Web scrap)
 - Pytest for automated back-end testing
 
@@ -51,9 +52,19 @@
     ```sh
     alembic upgrade head
     ```
+    or
+
+    ```sh
+    npm run migrate
+    ```
 8. Seed the database with initial data from MyAnimeList:
     ```sh
     py -m api.seeder
+    ```
+    or
+
+    ```sh
+    npm run seed
     ```
 
 
