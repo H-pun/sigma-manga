@@ -6,6 +6,8 @@
     "fastapi": "fastapi dev api/index.py",
     "dev": "next dev",
     "dev:all": "concurrently --raw \"npm run dev\" \"npm run fastapi\"",
+    "seed": "py -m api.seeder",
+    "migrate": "alembic upgrade head",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
