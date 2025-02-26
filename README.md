@@ -12,6 +12,7 @@
 - Responsive design for mobile and desktop
 - Server-side pagination
 - Pagination caching
+- Axios auto intercept snake_case to pascalCase
 - MyAnimeList seeder (Web scrap)
 - Pytest for automated back-end testing
 
