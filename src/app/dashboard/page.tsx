@@ -24,8 +24,7 @@ import { TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Pie, PieChart } from "recharts";
 
-import Highcharts from "highcharts";
-import HighchartsReact from "highcharts-react-official";
+import Highcharts from "@/components/highcharts";
 import { MangaCountByYear } from "@/types/manga";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -264,8 +263,6 @@ export default function Page() {
 const PieChartHC = ({ data }: { data: GenreChart[] }) => {
   const options: Highcharts.Options = {
     chart: {
-      type: "pie",
-      backgroundColor: "transparent",
       spacing: [0, 0, 0, 0],
       height: 220,
     },
@@ -304,14 +301,12 @@ const PieChartHC = ({ data }: { data: GenreChart[] }) => {
     ],
   };
 
-  return <HighchartsReact highcharts={Highcharts} options={options} />;
+  return <Highcharts options={options} />;
 };
 
 const ColumnChartHC = ({ data }: { data: MangaCountByYear[] }) => {
-  const options = {
+  const options: Highcharts.Options = {
     chart: {
-      type: "column",
-      backgroundColor: "transparent",
       spacing: [20, 0, 0, 0],
       height: 220,
     },
@@ -319,12 +314,7 @@ const ColumnChartHC = ({ data }: { data: MangaCountByYear[] }) => {
       text: undefined,
     },
     xAxis: {
-      categories: data.map((item) => item.year),
-      labels: {
-        style: {
-          color: "hsl(var(--muted-foreground))",
-        },
-      },
+      categories: data.map((item) => item.year.toString()),
     },
     yAxis: {
       min: 0,
@@ -332,19 +322,15 @@ const ColumnChartHC = ({ data }: { data: MangaCountByYear[] }) => {
       title: {
         text: "Manga Count",
       },
-      labels: {
-        style: {
-          color: "hsl(var(--muted-foreground))",
-        },
-      },
     },
     series: [
       {
+        type: "column",
         name: "Manga Count",
         data: data.map((item) => item.count),
       },
     ],
   };
 
-  return <HighchartsReact highcharts={Highcharts} options={options} />;
+  return <Highcharts options={options} />;
 };
