@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Command, Tag, LayoutDashboard, BookText } from "lucide-react";
+import Link from "next/link";
 
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -15,12 +13,19 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+import { Command, Tag, LayoutDashboard, BookText } from "lucide-react";
+
+import { useSession } from "next-auth/react";
 
 // This is sample data.
 const data = {
   user: {
-    name: "Whitefall",
+    name: "Nora Whitefall",
+    username: "whitefall",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
@@ -44,6 +49,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -67,11 +74,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <ScrollArea>
+          <NavMain items={data.navMain} />
+        </ScrollArea>
       </SidebarContent>
-      {/* <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter> */}
+      <SidebarFooter>
+        <NavUser user={session?.user ?? data.user} />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

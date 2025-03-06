@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -73,12 +74,15 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <a href="#" className="flex items-center gap-2 self-center font-medium">
+        <Link
+          href={"/"}
+          className="flex items-center gap-2 self-center font-medium"
+        >
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <GalleryVerticalEnd className="size-4" />
           </div>
           Sigma Corp.
-        </a>
+        </Link>
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader className="text-center">
@@ -91,7 +95,7 @@ export default function LoginPage() {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                   <div className="grid gap-6">
-                  <FormField
+                    <FormField
                       control={form.control}
                       name="username"
                       render={({ field, fieldState }) => (
@@ -115,8 +119,8 @@ export default function LoginPage() {
                       render={({ field, fieldState }) => (
                         <FormItem>
                           {/* <div className="flex items-center"> */}
-                            <FormLabel>Password</FormLabel>
-                            {/* <a
+                          <FormLabel>Password</FormLabel>
+                          {/* <a
                               href="#"
                               className="ml-auto text-sm underline-offset-4 hover:underline"
                             >
@@ -150,7 +154,7 @@ export default function LoginPage() {
                       ) : (
                         "Login"
                       )}
-                    </Button>          
+                    </Button>
                     {/* <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                     <span className="relative z-10 bg-background px-2 text-muted-foreground">
                       Or continue with
