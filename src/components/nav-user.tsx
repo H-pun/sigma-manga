@@ -103,7 +103,7 @@ export function NavUser({
             </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+              <DropdownMenuItem onClick={() => signOut({ redirect: false }).then(() => window.location.href = "/")}>
                 <LogOut />
                 Log out
               </DropdownMenuItem>

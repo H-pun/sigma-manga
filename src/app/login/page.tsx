@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import {
   Card,
@@ -45,8 +44,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const router = useRouter();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,7 +60,7 @@ export default function LoginPage() {
       ...data,
     }).then((res) => {
       if (res?.ok) {
-        router.replace("/dashboard");
+        window.location.href = "/dashboard";
       } else {
         setErrorMessage(res?.error ?? "Unexpected error");
       }
