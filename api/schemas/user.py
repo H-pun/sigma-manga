@@ -35,4 +35,4 @@ class DetailUser(BaseUser):
     id: UUID
     created_at: datetime
     updated_at: datetime
-    app_token: str | None
+    access_token: str | None

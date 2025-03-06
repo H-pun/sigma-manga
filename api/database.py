@@ -26,9 +26,9 @@ class User(Base):
     username: Mapped[str] = mapped_column(unique=True, index=True)
     password: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True, index=True)
+    access_token: Mapped[str] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    app_token: Mapped[str] = mapped_column(nullable=True)
 
 
 class Genre(Base):

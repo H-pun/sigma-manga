@@ -14,7 +14,7 @@ async def authenticate_user(db: Session, *, data: AuthenticateUser) -> DetailUse
     user = db.query(User).filter(User.username == data.username).first()
     if not user or not verify_password(user.password, data.password):
         raise AuthenticationError()  
-    user.app_token = create_access_token(user.id)
+    user.access_token = create_access_token(user.id)
     db.commit()
     return DetailUser.model_validate(user)
 
@@ -37,7 +37,7 @@ async def create_user(db: Session, *, data: CreateUser) -> DetailUser:
     db.add(db_row)
     db.commit()
     db.refresh(db_row)
-    db_row.app_token = create_access_token(db_row.id)
+    db_row.access_token = create_access_token(db_row.id)
     db.commit()
     return DetailUser.model_validate(db_row)
 

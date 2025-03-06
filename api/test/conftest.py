@@ -39,6 +39,6 @@ def user_token(client: TestClient) -> dict[str, str]:
     assert r.status_code == 200
 
     response = r.json()
-    assert "app_token" in response
-    auth_token = response["app_token"]
+    assert "access_token" in response
+    auth_token = response["access_token"]
     return {"Authorization": f"Bearer {auth_token}"}
