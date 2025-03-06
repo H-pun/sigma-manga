@@ -37,11 +37,8 @@ interface GenreChart {
 export default function Page() {
   const [chartDataGenre, setChartDataGenre] = useState<GenreChart[]>([]);
   const [chartConfigGenre, setChartConfigGenre] = useState<ChartConfig>({});
-  const [chartDataMangaCount, setChartDataMangaCount] = useState<
-    MangaCountByYear[]
-  >([]);
-  const [chartConfigMangaCount, setChartConfigMangaCount] =
-    useState<ChartConfig>({});
+  const [chartDataMangaCount, setChartDataMangaCount] = useState<MangaCountByYear[]>([]);
+  const [chartConfigMangaCount, setChartConfigMangaCount] = useState<ChartConfig>({});
 
   const { data: dataMangaCount, isFetching: isFetchingMangaCount } = useQuery({
     queryKey: ["mangaCountByYear"],
@@ -188,11 +185,10 @@ export default function Page() {
               <CardTitle>Recharts - Year Manga</CardTitle>
               <CardDescription>
                 Top 100 MyMangaList
-                {dataMangaCount.length > 0
-                  ? ` ${dataMangaCount[0].year} - ${
-                      dataMangaCount[dataMangaCount.length - 1].year
-                    }`
-                  : ""}
+                {dataMangaCount.length > 0 &&
+                  ` ${dataMangaCount[0].year} - ${
+                    dataMangaCount.at(-1)?.year
+                  }`}
               </CardDescription>
             </CardHeader>
             <CardContent>
